@@ -18,39 +18,27 @@ namespace XmlSerializationSample.XmlSerialization
     private readonly RecyclableMemoryStreamManager _recyclableMemoryStreamManager;
 
     public Serializer0(RecyclableMemoryStreamManager recyclableMemoryStreamManager)
-    {
-      _recyclableMemoryStreamManager = recyclableMemoryStreamManager ?? throw new ArgumentNullException(nameof(recyclableMemoryStreamManager));
-    }
+      => _recyclableMemoryStreamManager = recyclableMemoryStreamManager ?? throw new ArgumentNullException(nameof(recyclableMemoryStreamManager));
 
     public Task<string> SerializeAsync(object document, CancellationToken cancellationToken)
     {
-      using (var stream = _recyclableMemoryStreamManager.GetStream())
+      using (var stream = _recyclableMemoryStreamManager.GetStream()) 
+      using (var writer = new StreamWriter(stream, Encoding.UTF8))
       {
-        using (Serialize(document, stream))
-        {
-          return ReadAsync(stream);
-        }
+        Serialize(document, writer);
+        stream.Seek(0, SeekOrigin.Begin);
+
+        return ReadAsync(stream);
       }
     }
 
-    private IDisposable Serialize<TDocument>(TDocument document, Stream stream)
-    {
-      var writer = new StreamWriter(stream, Encoding.UTF8);
-
-      Serialize(document, writer);
-
-      stream.Seek(0, SeekOrigin.Begin);
-
-      return writer;
-    }
-
-    private void Serialize<TDocument>(TDocument document, StreamWriter writer)
+    private void Serialize(object document, StreamWriter writer)
     {
       var xmlSerializer = new XmlSerializer(
         typeof(ProductXmlDocumentBase),
         new[]
         {
-          typeof(TDocument),
+          document.GetType(),
         });
 
       var namespaces = new XmlSerializerNamespaces();
