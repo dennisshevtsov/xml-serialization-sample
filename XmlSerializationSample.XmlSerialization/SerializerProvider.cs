@@ -5,10 +5,16 @@
 namespace XmlSerializationSample.XmlSerialization
 {
   using System;
+  using System.Collections.Generic;
   using System.Xml.Serialization;
 
   public sealed class SerializerProvider : ISerializerProvider, ISerializerConfig
   {
+    private readonly IDictionary<Type, XmlAttributeOverrides> _overridesDictionary;
+
+    public SerializerProvider()
+      => _overridesDictionary = new Dictionary<Type, XmlAttributeOverrides>();
+
     public XmlSerializer Get(Type type)
     {
       throw new NotImplementedException();
