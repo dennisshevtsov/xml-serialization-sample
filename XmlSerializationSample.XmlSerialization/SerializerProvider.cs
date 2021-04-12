@@ -15,14 +15,13 @@ namespace XmlSerializationSample.XmlSerialization
     public SerializerProvider()
       => _overridesDictionary = new Dictionary<Type, XmlAttributeOverrides>();
 
-    public XmlSerializer Get(Type type)
-    {
-      throw new NotImplementedException();
-    }
+    public XmlSerializer Get(Type type) => new XmlSerializer(type, _overridesDictionary[type]);
 
     public ISerializerConfig Add(Type type, XmlAttributeOverrides overrides)
     {
-      throw new NotImplementedException();
+      _overridesDictionary.Add(type, overrides);
+
+      return this;
     }
   }
 }
