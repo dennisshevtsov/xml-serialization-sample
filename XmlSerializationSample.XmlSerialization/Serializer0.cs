@@ -15,14 +15,20 @@ namespace XmlSerializationSample.XmlSerialization
 
   public sealed class Serializer0 : ISerializer
   {
-    private readonly RecyclableMemoryStreamManager _recyclableMemoryStreamManager;
+    private readonly RecyclableMemoryStreamManager _streamManager;
+    private readonly ISerializerProvider _serializerProvider;
 
-    public Serializer0(RecyclableMemoryStreamManager recyclableMemoryStreamManager)
-      => _recyclableMemoryStreamManager = recyclableMemoryStreamManager ?? throw new ArgumentNullException(nameof(recyclableMemoryStreamManager));
+    public Serializer0(
+      RecyclableMemoryStreamManager streamManager,
+      ISerializerProvider serializerProvider)
+    {
+      _streamManager = streamManager ?? throw new ArgumentNullException(nameof(streamManager));
+      _serializerProvider = serializerProvider ?? throw new ArgumentNullException(nameof(serializerProvider));
+    }
 
     public Task<string> SerializeAsync(object document, CancellationToken cancellationToken)
     {
-      using (var stream = _recyclableMemoryStreamManager.GetStream()) 
+      using (var stream = _streamManager.GetStream())
       using (var writer = new StreamWriter(stream, Encoding.UTF8))
       {
         Serialize(document, writer);
@@ -34,12 +40,7 @@ namespace XmlSerializationSample.XmlSerialization
 
     private void Serialize(object document, StreamWriter writer)
     {
-      var xmlSerializer = new XmlSerializer(
-        typeof(ProductXmlDocumentBase),
-        new[]
-        {
-          document.GetType(),
-        });
+      var xmlSerializer = _serializerProvider.Get(document.GetType());
 
       var namespaces = new XmlSerializerNamespaces();
       namespaces.Add("", "");
@@ -78,6 +79,6 @@ namespace XmlSerializationSample.XmlSerialization
     public Task<TDocument> DeserializeAsync<TDocument>(Stream input, CancellationToken cancellationToken)
     {
       throw new NotImplementedException();
+    }
   }
-}
 }
