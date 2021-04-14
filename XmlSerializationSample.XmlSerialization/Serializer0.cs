@@ -26,15 +26,16 @@ namespace XmlSerializationSample.XmlSerialization
       _serializerProvider = serializerProvider ?? throw new ArgumentNullException(nameof(serializerProvider));
     }
 
-    public Task<string> SerializeAsync(object document, CancellationToken cancellationToken)
+    public async Task<string> SerializeAsync(object document, CancellationToken cancellationToken)
     {
       using (var stream = _streamManager.GetStream())
       using (var writer = new StreamWriter(stream, Encoding.UTF8))
+      using (var reader = new StreamReader(stream, Encoding.UTF8))
       {
         Serialize(document, writer);
         stream.Seek(0, SeekOrigin.Begin);
 
-        return ReadAsync(stream);
+        return await reader.ReadToEndAsync();
       }
     }
 
@@ -46,14 +47,6 @@ namespace XmlSerializationSample.XmlSerialization
       namespaces.Add("", "");
 
       xmlSerializer.Serialize(writer, document, namespaces);
-    }
-
-    private async Task<string> ReadAsync(Stream stream)
-    {
-      using (var reader = new StreamReader(stream, Encoding.UTF8))
-      {
-        return await reader.ReadToEndAsync();
-      }
     }
 
     public Task SerializeAsync(object document, Stream stream, CancellationToken cancellationToken)
