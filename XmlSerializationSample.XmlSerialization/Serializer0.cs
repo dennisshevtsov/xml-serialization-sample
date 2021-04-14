@@ -62,7 +62,20 @@ namespace XmlSerializationSample.XmlSerialization
 
     public Task<object> DeserializeAsync(string input, Type type, CancellationToken cancellationToken)
     {
-      throw new NotImplementedException();
+      using (var stream = _streamManager.GetStream())
+      using (var writer = new StreamWriter(stream, Encoding.UTF8))
+      using (var reader = new StreamReader(stream, Encoding.UTF8))
+      {
+        await writer.WriteLineAsync(input);
+        stream.Seek(0, SeekOrigin.Begin);
+
+        var serializer = _serializerProvider.Get(type);
+
+        var namespaces = new XmlSerializerNamespaces();
+        namespaces.Add("", "");
+
+        return serializer.Deserialize(reader);
+      }
     }
 
     public Task<object> DeserializeAsync(Stream input, Type type, CancellationToken cancellationToken)
