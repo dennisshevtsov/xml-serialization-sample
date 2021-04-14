@@ -51,7 +51,13 @@ namespace XmlSerializationSample.XmlSerialization
 
     public Task SerializeAsync(object document, Stream stream, CancellationToken cancellationToken)
     {
-      throw new NotImplementedException();
+      using (var writer = new StreamWriter(stream, Encoding.UTF8))
+      {
+        Serialize(document, writer);
+        stream.Seek(0, SeekOrigin.Begin);
+
+        return Task.CompletedTask;
+      }
     }
 
     public Task<object> DeserializeAsync(string input, Type type, CancellationToken cancellationToken)
