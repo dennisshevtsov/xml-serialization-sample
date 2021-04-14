@@ -60,7 +60,7 @@ namespace XmlSerializationSample.XmlSerialization
       }
     }
 
-    public Task<object> DeserializeAsync(string input, Type type, CancellationToken cancellationToken)
+    public async Task<object> DeserializeAsync(string input, Type type, CancellationToken cancellationToken)
     {
       using (var stream = _streamManager.GetStream())
       using (var writer = new StreamWriter(stream, Encoding.UTF8))
@@ -78,9 +78,19 @@ namespace XmlSerializationSample.XmlSerialization
       }
     }
 
-    public Task<object> DeserializeAsync(Stream input, Type type, CancellationToken cancellationToken)
+    public Task<object> DeserializeAsync(Stream stream, Type type, CancellationToken cancellationToken)
     {
-      throw new NotImplementedException();
+      using (var reader = new StreamReader(stream, Encoding.UTF8))
+      {
+        stream.Seek(0, SeekOrigin.Begin);
+
+        var serializer = _serializerProvider.Get(type);
+
+        var namespaces = new XmlSerializerNamespaces();
+        namespaces.Add("", "");
+
+        return Task.FromResult(serializer.Deserialize(reader));
+      }
     }
 
     public Task<TDocument> DeserializeAsync<TDocument>(string input, CancellationToken cancellationToken)
