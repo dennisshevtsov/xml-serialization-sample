@@ -7,49 +7,41 @@ namespace XmlSerializationSample.XmlSerialization
   using System;
   using System.IO;
   using System.Text;
+  using System.Threading;
   using System.Threading.Tasks;
   using System.Xml.Serialization;
 
   using Microsoft.IO;
 
-  public sealed class Serializer
+  public sealed class Serializer0 : ISerializer
   {
     private readonly RecyclableMemoryStreamManager _streamManager;
+    private readonly ISerializerProvider _serializerProvider;
 
-    public Serializer(RecyclableMemoryStreamManager streamManager)
-      => _streamManager = streamManager ?? throw new ArgumentNullException(nameof(streamManager));
+    public Serializer0(
+      RecyclableMemoryStreamManager streamManager,
+      ISerializerProvider serializerProvider)
+    {
+      _streamManager = streamManager ?? throw new ArgumentNullException(nameof(streamManager));
+      _serializerProvider = serializerProvider ?? throw new ArgumentNullException(nameof(serializerProvider));
+    }
 
-    public Task<string> SerializeAsync<TDocument>(TDocument document)
-      where TDocument : ProductXmlDocumentBase
+    public async Task<string> SerializeAsync(object document, CancellationToken cancellationToken)
     {
       using (var stream = _streamManager.GetStream())
+      using (var writer = new StreamWriter(stream, Encoding.UTF8))
+      using (var reader = new StreamReader(stream, Encoding.UTF8))
       {
-        using (Serialize(document, stream))
-        {
-          return ReadAsync(stream);
-        }
+        Serialize(document, writer);
+        stream.Seek(0, SeekOrigin.Begin);
+
+        return await reader.ReadToEndAsync();
       }
     }
 
-    private IDisposable Serialize<TDocument>(TDocument document, Stream stream)
+    private void Serialize(object document, StreamWriter writer)
     {
-      var writer = new StreamWriter(stream, Encoding.UTF8);
-
-      Serialize(document, writer);
-
-      stream.Seek(0, SeekOrigin.Begin);
-
-      return writer;
-    }
-
-    private void Serialize<TDocument>(TDocument document, StreamWriter writer)
-    {
-      var xmlSerializer = new XmlSerializer(
-        typeof(ProductXmlDocumentBase),
-        new[]
-        {
-          typeof(TDocument),
-        });
+      var xmlSerializer = _serializerProvider.Get(document.GetType());
 
       var namespaces = new XmlSerializerNamespaces();
       namespaces.Add("", "");
@@ -57,25 +49,63 @@ namespace XmlSerializationSample.XmlSerialization
       xmlSerializer.Serialize(writer, document, namespaces);
     }
 
-    private async Task<string> ReadAsync(Stream stream)
+    public Task SerializeAsync(object document, Stream stream, CancellationToken cancellationToken)
     {
-      using (var reader = new StreamReader(stream, Encoding.UTF8))
+      using (var writer = new StreamWriter(stream, Encoding.UTF8))
       {
-        return await reader.ReadToEndAsync();
+        Serialize(document, writer);
+        stream.Seek(0, SeekOrigin.Begin);
+
+        return Task.CompletedTask;
       }
     }
 
-    public TDocument Deserialize<TDocument>(Stream stream)
-      where TDocument : ProductXmlDocumentBase
+    public async Task<object> DeserializeAsync(string input, Type type, CancellationToken cancellationToken)
+    {
+      using (var stream = _streamManager.GetStream())
+      using (var writer = new StreamWriter(stream, Encoding.UTF8))
+      using (var reader = new StreamReader(stream, Encoding.UTF8))
+      {
+        await writer.WriteLineAsync(input);
+        stream.Seek(0, SeekOrigin.Begin);
+
+        var serializer = _serializerProvider.Get(type);
+
+        var namespaces = new XmlSerializerNamespaces();
+        namespaces.Add("", "");
+
+        return serializer.Deserialize(reader);
+      }
+    }
+
+    public Task<object> DeserializeAsync(Stream stream, Type type, CancellationToken cancellationToken)
     {
       using (var reader = new StreamReader(stream, Encoding.UTF8))
       {
-        var serializer = new XmlSerializer(
-          typeof(ProductXmlDocumentBase),
-          new[]
-          {
-            typeof(TDocument),
-          });
+        stream.Seek(0, SeekOrigin.Begin);
+
+        var serializer = _serializerProvider.Get(type);
+
+        var namespaces = new XmlSerializerNamespaces();
+        namespaces.Add("", "");
+
+        return Task.FromResult(serializer.Deserialize(reader));
+      }
+    }
+
+    public async Task<TDocument> DeserializeAsync<TDocument>(string input, CancellationToken cancellationToken)
+      where TDocument : class
+    {
+      using (var stream = _streamManager.GetStream())
+      using (var writer = new StreamWriter(stream, Encoding.UTF8))
+      using (var reader = new StreamReader(stream, Encoding.UTF8))
+      {
+        await writer.WriteLineAsync(input);
+        await writer.FlushAsync();
+
+        stream.Seek(0, SeekOrigin.Begin);
+
+        var serializer = _serializerProvider.Get(typeof(TDocument));
 
         var namespaces = new XmlSerializerNamespaces();
         namespaces.Add("", "");
@@ -84,28 +114,19 @@ namespace XmlSerializationSample.XmlSerialization
       }
     }
 
-    public TDocument Deserialize<TDocument>(string document)
-      where TDocument : ProductXmlDocumentBase
+    public Task<TDocument> DeserializeAsync<TDocument>(Stream stream, CancellationToken cancellationToken)
+      where TDocument : class
     {
-      using (var stream = _streamManager.GetStream())
+      using (var reader = new StreamReader(stream, Encoding.UTF8))
       {
-        var writer = new StreamWriter(stream, Encoding.UTF8);
-        {
-          writer.WriteLine(document);
-          writer.Flush();
-          stream.Seek(0, SeekOrigin.Begin);
+        stream.Seek(0, SeekOrigin.Begin);
 
-          using (var reader = new StreamReader(stream, Encoding.UTF8))
-          {
-            var serializer = new XmlSerializer(
-              typeof(TDocument),
-              new XmlRootAttribute("product"));
+        var serializer = _serializerProvider.Get(typeof(TDocument));
 
-            var r = serializer.Deserialize(reader) as TDocument;
+        var namespaces = new XmlSerializerNamespaces();
+        namespaces.Add("", "");
 
-            return r;
-          }
-        }
+        return Task.FromResult(serializer.Deserialize(reader) as TDocument);
       }
     }
   }
