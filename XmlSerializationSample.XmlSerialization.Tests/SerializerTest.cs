@@ -1,20 +1,39 @@
+// Copyright (c) Dennis Shevtsov. All rights reserved.
+// Licensed under the MIT License.
+// See LICENSE in the project root for license information.
+
 namespace XmlSerializationSample.XmlSerialization.Tests
 {
+  using System;
   using System.Threading.Tasks;
+  using System.Xml.Serialization;
 
-  using Microsoft.IO;
+  using Microsoft.Extensions.DependencyInjection;
   using Microsoft.VisualStudio.TestTools.UnitTesting;
 
   [TestClass]
   public class SerializerTest
   {
-    private Serializer _serializer;
+    private IDisposable _disposable;
+    private ISerializer _serializer;
 
     [TestInitialize]
     public void Initialize()
     {
-      _serializer = new Serializer(new RecyclableMemoryStreamManager());
+      var services = new ServiceCollection();
+
+      services.AddSerialization(
+        config => config.Add(typeof(LaptopXmlDocument), new XmlAttributeOverrides())
+                        .Add(typeof(OpticalMouseXmlDocument), new XmlAttributeOverrides()));
+
+      var provider = services.BuildServiceProvider();
+
+      _disposable = provider;
+      _serializer = provider.GetRequiredService<ISerializer>();
     }
+
+    [TestCleanup]
+    public void Cleanup() => _disposable?.Dispose();
 
     [TestMethod]
     public async Task TestSerialize()
