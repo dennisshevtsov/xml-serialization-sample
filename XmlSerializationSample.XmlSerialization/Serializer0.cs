@@ -114,10 +114,20 @@ namespace XmlSerializationSample.XmlSerialization
       }
     }
 
-    public Task<TDocument> DeserializeAsync<TDocument>(Stream input, CancellationToken cancellationToken)
+    public Task<TDocument> DeserializeAsync<TDocument>(Stream stream, CancellationToken cancellationToken)
       where TDocument : class
     {
-      throw new NotImplementedException();
+      using (var reader = new StreamReader(stream, Encoding.UTF8))
+      {
+        stream.Seek(0, SeekOrigin.Begin);
+
+        var serializer = _serializerProvider.Get(typeof(TDocument));
+
+        var namespaces = new XmlSerializerNamespaces();
+        namespaces.Add("", "");
+
+        return Task.FromResult(serializer.Deserialize(reader) as TDocument);
+      }
     }
   }
 }
