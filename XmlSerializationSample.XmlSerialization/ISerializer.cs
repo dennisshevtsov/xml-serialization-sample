@@ -19,8 +19,10 @@ namespace XmlSerializationSample.XmlSerialization
 
     public Task<object> DeserializeAsync(Stream input, Type type, CancellationToken cancellationToken);
 
-    public Task<TDocument> DeserializeAsync<TDocument>(string input, CancellationToken cancellationToken);
+    public Task<TDocument> DeserializeAsync<TDocument>(string input, CancellationToken cancellationToken)
+      where TDocument : class;
 
-    public Task<TDocument> DeserializeAsync<TDocument>(Stream input, CancellationToken cancellationToken);
+    public Task<TDocument> DeserializeAsync<TDocument>(Stream input, CancellationToken cancellationToken)
+      where TDocument : class;
   }
 }

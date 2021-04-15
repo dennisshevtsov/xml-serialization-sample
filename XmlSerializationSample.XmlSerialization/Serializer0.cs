@@ -93,12 +93,29 @@ namespace XmlSerializationSample.XmlSerialization
       }
     }
 
-    public Task<TDocument> DeserializeAsync<TDocument>(string input, CancellationToken cancellationToken)
+    public async Task<TDocument> DeserializeAsync<TDocument>(string input, CancellationToken cancellationToken)
+      where TDocument : class
     {
-      throw new NotImplementedException();
+      using (var stream = _streamManager.GetStream())
+      using (var writer = new StreamWriter(stream, Encoding.UTF8))
+      using (var reader = new StreamReader(stream, Encoding.UTF8))
+      {
+        await writer.WriteLineAsync(input);
+        await writer.FlushAsync();
+
+        stream.Seek(0, SeekOrigin.Begin);
+
+        var serializer = _serializerProvider.Get(typeof(TDocument));
+
+        var namespaces = new XmlSerializerNamespaces();
+        namespaces.Add("", "");
+
+        return serializer.Deserialize(reader) as TDocument;
+      }
     }
 
     public Task<TDocument> DeserializeAsync<TDocument>(Stream input, CancellationToken cancellationToken)
+      where TDocument : class
     {
       throw new NotImplementedException();
     }
