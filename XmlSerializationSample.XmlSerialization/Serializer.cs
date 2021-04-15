@@ -13,12 +13,12 @@ namespace XmlSerializationSample.XmlSerialization
 
   using Microsoft.IO;
 
-  public sealed class Serializer0 : ISerializer
+  public sealed class Serializer : ISerializer
   {
     private readonly RecyclableMemoryStreamManager _streamManager;
     private readonly ISerializerProvider _serializerProvider;
 
-    public Serializer0(
+    public Serializer(
       RecyclableMemoryStreamManager streamManager,
       ISerializerProvider serializerProvider)
     {
