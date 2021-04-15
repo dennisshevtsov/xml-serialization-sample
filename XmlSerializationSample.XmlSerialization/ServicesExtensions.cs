@@ -7,6 +7,7 @@ namespace XmlSerializationSample.XmlSerialization
   using System;
 
   using Microsoft.Extensions.DependencyInjection;
+  using Microsoft.IO;
 
   public static class ServicesExtensions
   {
@@ -28,6 +29,8 @@ namespace XmlSerializationSample.XmlSerialization
       configure.Invoke(provider);
 
       services.AddSingleton(provider);
+      services.AddSingleton<RecyclableMemoryStreamManager>();
+      services.AddScoped<ISerializer, Serializer>();
 
       return services;
     }
