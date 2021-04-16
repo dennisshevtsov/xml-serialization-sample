@@ -5,6 +5,7 @@
 namespace XmlSerializationSample.XmlSerialization.Tests
 {
   using System;
+  using System.Threading;
   using System.Threading.Tasks;
   using System.Xml.Serialization;
 
@@ -47,21 +48,22 @@ namespace XmlSerializationSample.XmlSerialization.Tests
         Processor = "test",
         RamVolume = "test",
       };
-      var laptopXml = await _serializer.SerializeAsync(laptopXmlDocument);
+      var laptopXml = await _serializer.SerializeAsync(laptopXmlDocument, CancellationToken.None);
     }
 
     [TestMethod]
     public void TestDeserialize()
     {
       var laptopXml = @"<?xml version=""1.0"" encoding=""utf-8""?>
-<product d1p1:type=""LaptopXmlDocument"" sku=""test"" xmlns:d1p1=""http://www.w3.org/2001/XMLSchema-instance"">
+<product sku=""test"">
   <title>Test Test</title>
   <description>Test test test.</description>
   <screen>test</screen>
   <processor>test</processor>
   <ram>test</ram>
 </product>";
-      var laptopXmlDocument = _serializer.Deserialize<LaptopXmlDocument>(laptopXml);
+      var laptopXmlDocument = _serializer.DeserializeAsync(
+        laptopXml, typeof(LaptopXmlDocument), CancellationToken.None);
     }
 
     [TestMethod]
@@ -75,21 +77,8 @@ namespace XmlSerializationSample.XmlSerialization.Tests
   <processor>test</processor>
   <ram>test</ram>
 </product>";
-      var laptopXmlDocument = _serializer.Deserialize<LaptopXmlDocument>(laptopXml);
-    }
-
-    [TestMethod]
-    public void TestDeserialize2()
-    {
-      var laptopXml = @"<?xml version=""1.0"" encoding=""utf-8""?>
-<LaptopXmlDocument sku=""test"">
-  <title>Test Test</title>
-  <description>Test test test.</description>
-  <screen>test</screen>
-  <processor>test</processor>
-  <ram>test</ram>
-</LaptopXmlDocument>";
-      var laptopXmlDocument = _serializer.Deserialize<LaptopXmlDocument>(laptopXml);
+      var laptopXmlDocument = _serializer.DeserializeAsync<LaptopXmlDocument>(
+        laptopXml, CancellationToken.None);
     }
   }
 }
