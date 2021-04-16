@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 // See LICENSE in the project root for license information.
 
-namespace XmlSerializationSample.XmlSerialization
+namespace XmlSerializationSample.XmlSerialization.Tests
 {
   using System.Xml.Serialization;
 
