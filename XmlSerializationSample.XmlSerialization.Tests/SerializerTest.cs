@@ -5,6 +5,7 @@
 namespace XmlSerializationSample.XmlSerialization.Tests
 {
   using System;
+  using System.IO;
   using System.Threading;
   using System.Threading.Tasks;
   using System.Xml.Serialization;
@@ -52,6 +53,25 @@ namespace XmlSerializationSample.XmlSerialization.Tests
     }
 
     [TestMethod]
+    public async Task TestSerializeStream()
+    {
+      var laptopXmlDocument = new LaptopXmlDocument
+      {
+        Sku = "test",
+        Title = "Test Test",
+        Description = "Test test test.",
+        ScreenSize = "test",
+        Processor = "test",
+        RamVolume = "test",
+      };
+
+      using (var stream = new MemoryStream())
+      {
+        await _serializer.SerializeAsync(laptopXmlDocument, stream, CancellationToken.None);
+      }
+    }
+
+    [TestMethod]
     public void TestDeserialize()
     {
       var laptopXml = @"<?xml version=""1.0"" encoding=""utf-8""?>
@@ -67,7 +87,30 @@ namespace XmlSerializationSample.XmlSerialization.Tests
     }
 
     [TestMethod]
-    public void TestDeserialize1()
+    public async Task TestDeserializeStream()
+    {
+      var laptopXml = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<product sku=""test"">
+  <title>Test Test</title>
+  <description>Test test test.</description>
+  <screen>test</screen>
+  <processor>test</processor>
+  <ram>test</ram>
+</product>";
+
+      using (var stream = new MemoryStream())
+      using (var writer = new StreamWriter(stream))
+      {
+        await writer.WriteLineAsync(laptopXml);
+        await writer.FlushAsync();
+
+        var laptopXmlDocument = _serializer.DeserializeAsync(
+          stream, typeof(LaptopXmlDocument), CancellationToken.None);
+      }
+    }
+
+    [TestMethod]
+    public void TestDeserializeGeneric()
     {
       var laptopXml = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <product sku=""test"">
@@ -79,6 +122,28 @@ namespace XmlSerializationSample.XmlSerialization.Tests
 </product>";
       var laptopXmlDocument = _serializer.DeserializeAsync<LaptopXmlDocument>(
         laptopXml, CancellationToken.None);
+    }
+
+    [TestMethod]
+    public async Task TestDeserializeGenericStream()
+    {
+      var laptopXml = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<product sku=""test"">
+  <title>Test Test</title>
+  <description>Test test test.</description>
+  <screen>test</screen>
+  <processor>test</processor>
+  <ram>test</ram>
+</product>";
+      using (var stream = new MemoryStream())
+      using (var writer = new StreamWriter(stream))
+      {
+        await writer.WriteLineAsync(laptopXml);
+        await writer.FlushAsync();
+
+        var laptopXmlDocument = _serializer.DeserializeAsync<LaptopXmlDocument>(
+          stream, CancellationToken.None);
+      }
     }
   }
 }
