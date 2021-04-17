@@ -6,7 +6,7 @@ namespace XmlSerializationSample.XmlSerialization.Tests
 {
   using System.Xml.Serialization;
 
-  public sealed class LaptopXmlDocument : ProductXmlDocumentBase
+  public sealed class LaptopDocument : ProductXmlDocumentBase
   {
     [XmlElement("screen")]
     public string ScreenSize { get; set; }

@@ -6,12 +6,10 @@ namespace XmlSerializationSample.XmlSerialization.Tests
 {
   using System.Xml.Serialization;
 
-  public sealed class OpticalMouseXmlDocument : ProductXmlDocumentBase
+  public sealed class OpticalMouseDocumentConfiguration : IDocumentConfiguration<OpticalMouseDocument>
   {
-    [XmlElement("dpi")]
-    public int OpticalTrackingDpi { get; set; }
-
-    [XmlElement("buttons")]
-    public int Buttons { get; set; }
+    public void Configure(XmlAttributeOverrides overrides)
+    {
+    }
   }
 }

@@ -8,7 +8,6 @@ namespace XmlSerializationSample.XmlSerialization.Tests
   using System.IO;
   using System.Threading;
   using System.Threading.Tasks;
-  using System.Xml.Serialization;
 
   using Microsoft.Extensions.DependencyInjection;
   using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -16,6 +15,8 @@ namespace XmlSerializationSample.XmlSerialization.Tests
   [TestClass]
   public class SerializerTest
   {
+    private const int RandomTokenSize = 5;
+
     private IDisposable _disposable;
     private ISerializer _serializer;
 
@@ -25,8 +26,8 @@ namespace XmlSerializationSample.XmlSerialization.Tests
       var services = new ServiceCollection();
 
       services.AddSerialization(
-        config => config.Add(typeof(LaptopXmlDocument), new XmlAttributeOverrides())
-                        .Add(typeof(OpticalMouseXmlDocument), new XmlAttributeOverrides()));
+        config => config.Add(new LaptopDocumentConfiguration())
+                        .Add(new OpticalMouseDocumentConfiguration()));
 
       var provider = services.BuildServiceProvider();
 
@@ -40,41 +41,25 @@ namespace XmlSerializationSample.XmlSerialization.Tests
     [TestMethod]
     public async Task TestSerialize()
     {
-      var laptopXmlDocument = new LaptopXmlDocument
-      {
-        Sku = "test",
-        Title = "Test Test",
-        Description = "Test test test.",
-        ScreenSize = "test",
-        Processor = "test",
-        RamVolume = "test",
-      };
-      var laptopXml = await _serializer.SerializeAsync(laptopXmlDocument, CancellationToken.None);
+      var document = SerializerTest.GenerateLaptop();
+      var xml = await _serializer.SerializeAsync(document, CancellationToken.None);
     }
 
     [TestMethod]
     public async Task TestSerializeStream()
     {
-      var laptopXmlDocument = new LaptopXmlDocument
-      {
-        Sku = "test",
-        Title = "Test Test",
-        Description = "Test test test.",
-        ScreenSize = "test",
-        Processor = "test",
-        RamVolume = "test",
-      };
-
       using (var stream = new MemoryStream())
       {
-        await _serializer.SerializeAsync(laptopXmlDocument, stream, CancellationToken.None);
+        var document = SerializerTest.GenerateLaptop();
+
+        await _serializer.SerializeAsync(document, stream, CancellationToken.None);
       }
     }
 
     [TestMethod]
     public void TestDeserialize()
     {
-      var laptopXml = @"<?xml version=""1.0"" encoding=""utf-8""?>
+      var xml = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <product sku=""test"">
   <title>Test Test</title>
   <description>Test test test.</description>
@@ -82,14 +67,14 @@ namespace XmlSerializationSample.XmlSerialization.Tests
   <processor>test</processor>
   <ram>test</ram>
 </product>";
-      var laptopXmlDocument = _serializer.DeserializeAsync(
-        laptopXml, typeof(LaptopXmlDocument), CancellationToken.None);
+      var document = _serializer.DeserializeAsync(
+        xml, typeof(LaptopDocument), CancellationToken.None);
     }
 
     [TestMethod]
     public async Task TestDeserializeStream()
     {
-      var laptopXml = @"<?xml version=""1.0"" encoding=""utf-8""?>
+      var xml = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <product sku=""test"">
   <title>Test Test</title>
   <description>Test test test.</description>
@@ -101,18 +86,18 @@ namespace XmlSerializationSample.XmlSerialization.Tests
       using (var stream = new MemoryStream())
       using (var writer = new StreamWriter(stream))
       {
-        await writer.WriteLineAsync(laptopXml);
+        await writer.WriteLineAsync(xml);
         await writer.FlushAsync();
 
-        var laptopXmlDocument = _serializer.DeserializeAsync(
-          stream, typeof(LaptopXmlDocument), CancellationToken.None);
+        var document = _serializer.DeserializeAsync(
+          stream, typeof(LaptopDocument), CancellationToken.None);
       }
     }
 
     [TestMethod]
     public void TestDeserializeGeneric()
     {
-      var laptopXml = @"<?xml version=""1.0"" encoding=""utf-8""?>
+      var xml = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <product sku=""test"">
   <title>Test Test</title>
   <description>Test test test.</description>
@@ -120,14 +105,14 @@ namespace XmlSerializationSample.XmlSerialization.Tests
   <processor>test</processor>
   <ram>test</ram>
 </product>";
-      var laptopXmlDocument = _serializer.DeserializeAsync<LaptopXmlDocument>(
-        laptopXml, CancellationToken.None);
+      var document = _serializer.DeserializeAsync<LaptopDocument>(
+        xml, CancellationToken.None);
     }
 
     [TestMethod]
     public async Task TestDeserializeGenericStream()
     {
-      var laptopXml = @"<?xml version=""1.0"" encoding=""utf-8""?>
+      var xml = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <product sku=""test"">
   <title>Test Test</title>
   <description>Test test test.</description>
@@ -138,12 +123,30 @@ namespace XmlSerializationSample.XmlSerialization.Tests
       using (var stream = new MemoryStream())
       using (var writer = new StreamWriter(stream))
       {
-        await writer.WriteLineAsync(laptopXml);
+        await writer.WriteLineAsync(xml);
         await writer.FlushAsync();
 
-        var laptopXmlDocument = _serializer.DeserializeAsync<LaptopXmlDocument>(
+        var document = _serializer.DeserializeAsync<LaptopDocument>(
           stream, CancellationToken.None);
       }
     }
+
+    private static string GenerateToken(int length = SerializerTest.RandomTokenSize) =>
+      Guid.NewGuid()
+          .ToString()
+          .Replace("-", "")
+          .Substring(0, length)
+          .ToUpper();
+
+    private static LaptopDocument GenerateLaptop() =>
+      new LaptopDocument
+      {
+        Sku = SerializerTest.GenerateToken(),
+        Title = SerializerTest.GenerateToken(),
+        Description = SerializerTest.GenerateToken(),
+        ScreenSize = SerializerTest.GenerateToken(),
+        Processor = SerializerTest.GenerateToken(),
+        RamVolume = SerializerTest.GenerateToken(),
+      };
   }
 }
