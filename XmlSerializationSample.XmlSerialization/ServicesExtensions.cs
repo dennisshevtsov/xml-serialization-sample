@@ -28,7 +28,7 @@ namespace XmlSerializationSample.XmlSerialization
 
       configure.Invoke(provider);
 
-      services.AddSingleton(provider);
+      services.AddSingleton<ISerializerProvider>(provider);
       services.AddSingleton<RecyclableMemoryStreamManager>();
       services.AddScoped<ISerializer, Serializer>();
 

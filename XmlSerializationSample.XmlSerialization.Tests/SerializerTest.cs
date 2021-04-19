@@ -43,6 +43,8 @@ namespace XmlSerializationSample.XmlSerialization.Tests
     {
       var document = SerializerTest.GenerateLaptop();
       var xml = await _serializer.SerializeAsync(document, CancellationToken.None);
+
+      Assert.IsNotNull(xml);
     }
 
     [TestMethod]
