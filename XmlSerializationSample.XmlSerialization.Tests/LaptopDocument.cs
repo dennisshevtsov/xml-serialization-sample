@@ -4,8 +4,6 @@
 
 namespace XmlSerializationSample.XmlSerialization.Tests
 {
-  using System.Xml.Serialization;
-
   public sealed class LaptopDocument : ProductXmlDocumentBase
   {
     public string ScreenSize { get; set; }
