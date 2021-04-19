@@ -10,7 +10,6 @@ namespace XmlSerializationSample.XmlSerialization.Tests
   {
     public void Configure(XmlAttributeOverrides overrides)
     {
-
       var attributes1 = new XmlAttributes();
       attributes1.XmlRoot = new XmlRootAttribute("product");
 
