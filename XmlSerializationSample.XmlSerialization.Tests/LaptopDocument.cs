@@ -8,13 +8,10 @@ namespace XmlSerializationSample.XmlSerialization.Tests
 
   public sealed class LaptopDocument : ProductXmlDocumentBase
   {
-    [XmlElement("screen")]
     public string ScreenSize { get; set; }
 
-    [XmlElement("processor")]
     public string Processor { get; set; }
 
-    [XmlElement("ram")]
     public string RamVolume { get; set; }
   }
 }

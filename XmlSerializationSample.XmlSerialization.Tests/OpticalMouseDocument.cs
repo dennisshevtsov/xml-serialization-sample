@@ -8,10 +8,8 @@ namespace XmlSerializationSample.XmlSerialization.Tests
 
   public sealed class OpticalMouseDocument : ProductXmlDocumentBase
   {
-    [XmlElement("dpi")]
     public int OpticalTrackingDpi { get; set; }
 
-    [XmlElement("buttons")]
     public int Buttons { get; set; }
   }
 }

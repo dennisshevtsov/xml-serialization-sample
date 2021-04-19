@@ -11,6 +11,25 @@ namespace XmlSerializationSample.XmlSerialization.Tests
     public void Configure(XmlAttributeOverrides overrides)
     {
 
+      var attributes1 = new XmlAttributes();
+      attributes1.XmlRoot = new XmlRootAttribute("product");
+
+      overrides.Add(typeof(LaptopDocument), attributes1);
+
+      var attributes0 = new XmlAttributes();
+      attributes0.XmlAttribute = new XmlAttributeAttribute("sku");
+
+      overrides.Add(typeof(ProductXmlDocumentBase), nameof(ProductXmlDocumentBase.Sku), attributes0);
+
+      var attributes2 = new XmlAttributes();
+      attributes2.XmlElements.Add(new XmlElementAttribute("title"));
+
+      overrides.Add(typeof(ProductXmlDocumentBase), nameof(ProductXmlDocumentBase.Title), attributes2);
+
+      var attributes3 = new XmlAttributes();
+      attributes3.XmlElements.Add(new XmlElementAttribute("description"));
+
+      overrides.Add(typeof(ProductXmlDocumentBase), nameof(ProductXmlDocumentBase.Description), attributes3);
     }
   }
 }
