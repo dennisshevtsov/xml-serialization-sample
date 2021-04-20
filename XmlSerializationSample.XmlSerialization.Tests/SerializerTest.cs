@@ -10,6 +10,7 @@ namespace XmlSerializationSample.XmlSerialization.Tests
   using System.Threading;
   using System.Threading.Tasks;
   using System.Xml.Linq;
+
   using Microsoft.Extensions.DependencyInjection;
   using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -45,17 +46,7 @@ namespace XmlSerializationSample.XmlSerialization.Tests
       var document = SerializerTest.GenerateLaptop();
       var xml = await _serializer.SerializeAsync(document, CancellationToken.None);
 
-      Assert.IsNotNull(xml);
-
-      var parsed = XDocument.Parse(xml);
-
-      Assert.AreEqual("product", parsed.Root.Name.LocalName);
-      Assert.AreEqual(document.Sku, parsed.Root.Attribute("sku").Value);
-      Assert.AreEqual(document.Title, parsed.Root.Element("title").Value);
-      Assert.AreEqual(document.Description, parsed.Root.Element("description").Value);
-      Assert.AreEqual(document.ScreenSize, parsed.Root.Element("screen-size").Value);
-      Assert.AreEqual(document.Processor, parsed.Root.Element("processor").Value);
-      Assert.AreEqual(document.RamVolume, parsed.Root.Element("ram-volume").Value);
+      Check(document, xml);
     }
 
     [TestMethod]
@@ -73,17 +64,7 @@ namespace XmlSerializationSample.XmlSerialization.Tests
 
           var xml = await reader.ReadToEndAsync();
 
-          Assert.IsNotNull(xml);
-
-          var parsed = XDocument.Parse(xml);
-
-          Assert.AreEqual("product", parsed.Root.Name.LocalName);
-          Assert.AreEqual(document.Sku, parsed.Root.Attribute("sku").Value);
-          Assert.AreEqual(document.Title, parsed.Root.Element("title").Value);
-          Assert.AreEqual(document.Description, parsed.Root.Element("description").Value);
-          Assert.AreEqual(document.ScreenSize, parsed.Root.Element("screen-size").Value);
-          Assert.AreEqual(document.Processor, parsed.Root.Element("processor").Value);
-          Assert.AreEqual(document.RamVolume, parsed.Root.Element("ram-volume").Value);
+          Check(document, xml);
         }
       }
     }
@@ -180,5 +161,20 @@ namespace XmlSerializationSample.XmlSerialization.Tests
         Processor = SerializerTest.GenerateToken(),
         RamVolume = SerializerTest.GenerateToken(),
       };
+
+    private static void Check(LaptopDocument document, string xml)
+    {
+      Assert.IsNotNull(xml);
+
+      var parsed = XDocument.Parse(xml);
+
+      Assert.AreEqual("product", parsed.Root.Name.LocalName);
+      Assert.AreEqual(document.Sku, parsed.Root.Attribute("sku").Value);
+      Assert.AreEqual(document.Title, parsed.Root.Element("title").Value);
+      Assert.AreEqual(document.Description, parsed.Root.Element("description").Value);
+      Assert.AreEqual(document.ScreenSize, parsed.Root.Element("screen-size").Value);
+      Assert.AreEqual(document.Processor, parsed.Root.Element("processor").Value);
+      Assert.AreEqual(document.RamVolume, parsed.Root.Element("ram-volume").Value);
+    }
   }
 }
