@@ -49,12 +49,15 @@ namespace XmlSerializationSample.XmlSerialization
       xmlSerializer.Serialize(writer, document, namespaces);
     }
 
-    public Task SerializeAsync(object document, Stream stream, CancellationToken cancellationToken)
+    public Task SerializeAsync(object document, Stream output, CancellationToken cancellationToken)
     {
+      using (var stream = _streamManager.GetStream())
       using (var writer = new StreamWriter(stream, Encoding.UTF8))
       {
         Serialize(document, writer);
         stream.Seek(0, SeekOrigin.Begin);
+
+        stream.CopyTo(output);
 
         return Task.CompletedTask;
       }
