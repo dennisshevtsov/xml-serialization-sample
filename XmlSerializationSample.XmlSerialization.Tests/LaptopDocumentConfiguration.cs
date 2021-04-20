@@ -31,7 +31,7 @@ namespace XmlSerializationSample.XmlSerialization.Tests
       overrides.Add(typeof(ProductXmlDocumentBase), nameof(ProductXmlDocumentBase.Description), attributes3);
 
       var attributes4 = new XmlAttributes();
-      attributes4.XmlElements.Add(new XmlElementAttribute("screenSize"));
+      attributes4.XmlElements.Add(new XmlElementAttribute("screen-size"));
 
       overrides.Add(typeof(LaptopDocument), nameof(LaptopDocument.ScreenSize), attributes4);
 
@@ -41,7 +41,7 @@ namespace XmlSerializationSample.XmlSerialization.Tests
       overrides.Add(typeof(LaptopDocument), nameof(LaptopDocument.Processor), attributes5);
 
       var attributes6 = new XmlAttributes();
-      attributes6.XmlElements.Add(new XmlElementAttribute("ramVolume"));
+      attributes6.XmlElements.Add(new XmlElementAttribute("ram-volume"));
 
       overrides.Add(typeof(LaptopDocument), nameof(LaptopDocument.RamVolume), attributes6);
     }
