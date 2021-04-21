@@ -70,18 +70,25 @@ namespace XmlSerializationSample.XmlSerialization.Tests
     }
 
     [TestMethod]
-    public void TestDeserialize()
+    public async Task TestDeserialize()
     {
-      var xml = @"<?xml version=""1.0"" encoding=""utf-8""?>
-<product sku=""test"">
-  <title>Test Test</title>
-  <description>Test test test.</description>
-  <screen>test</screen>
-  <processor>test</processor>
-  <ram>test</ram>
-</product>";
-      var document = _serializer.DeserializeAsync(
+      var expected = SerializerTest.GenerateLaptop();
+      var xml = SerializerTest.GenerateXml(expected);
+      var document = await _serializer.DeserializeAsync(
         xml, typeof(LaptopDocument), CancellationToken.None);
+
+      Assert.IsNotNull(document);
+
+      var actual = document as LaptopDocument;
+
+      Assert.IsNotNull(actual);
+
+      Assert.AreEqual(expected.Sku, actual.Sku);
+      Assert.AreEqual(expected.Title, actual.Title);
+      Assert.AreEqual(expected.Description, actual.Description);
+      Assert.AreEqual(expected.ScreenSize, actual.ScreenSize);
+      Assert.AreEqual(expected.Processor, actual.Processor);
+      Assert.AreEqual(expected.RamVolume, actual.RamVolume);
     }
 
     [TestMethod]
@@ -161,6 +168,16 @@ namespace XmlSerializationSample.XmlSerialization.Tests
         Processor = SerializerTest.GenerateToken(),
         RamVolume = SerializerTest.GenerateToken(),
       };
+
+    private static string GenerateXml(LaptopDocument document) =>
+@$"<?xml version=""1.0"" encoding=""utf-8""?>
+<product sku=""{document.Sku}"">
+  <title>{document.Title}</title>
+  <description>{document.Description}</description>
+  <screen-size>{document.ScreenSize}</screen-size>
+  <processor>{document.Processor}</processor>
+  <ram-volume>{document.RamVolume}</ram-volume>
+</product>";
 
     private static void Check(LaptopDocument document, string xml)
     {
