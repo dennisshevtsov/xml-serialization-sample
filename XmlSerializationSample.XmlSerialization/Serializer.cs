@@ -70,6 +70,8 @@ namespace XmlSerializationSample.XmlSerialization
       using (var reader = new StreamReader(stream, Encoding.UTF8))
       {
         await writer.WriteLineAsync(input);
+        await writer.FlushAsync();
+
         stream.Seek(0, SeekOrigin.Begin);
 
         var serializer = _serializerProvider.Get(type);
@@ -77,7 +79,9 @@ namespace XmlSerializationSample.XmlSerialization
         var namespaces = new XmlSerializerNamespaces();
         namespaces.Add("", "");
 
-        return serializer.Deserialize(reader);
+        var a = serializer.Deserialize(reader);
+
+        return a;
       }
     }
 
