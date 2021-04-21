@@ -46,7 +46,7 @@ namespace XmlSerializationSample.XmlSerialization.Tests
       var document = SerializerTest.GenerateLaptop();
       var xml = await _serializer.SerializeAsync(document, CancellationToken.None);
 
-      Check(document, xml);
+      SerializerTest.Check(document, xml);
     }
 
     [TestMethod]
@@ -64,7 +64,7 @@ namespace XmlSerializationSample.XmlSerialization.Tests
 
           var xml = await reader.ReadToEndAsync();
 
-          Check(document, xml);
+          SerializerTest.Check(document, xml);
         }
       }
     }
@@ -81,14 +81,7 @@ namespace XmlSerializationSample.XmlSerialization.Tests
 
       var actual = document as LaptopDocument;
 
-      Assert.IsNotNull(actual);
-
-      Assert.AreEqual(expected.Sku, actual.Sku);
-      Assert.AreEqual(expected.Title, actual.Title);
-      Assert.AreEqual(expected.Description, actual.Description);
-      Assert.AreEqual(expected.ScreenSize, actual.ScreenSize);
-      Assert.AreEqual(expected.Processor, actual.Processor);
-      Assert.AreEqual(expected.RamVolume, actual.RamVolume);
+      SerializerTest.Check(expected, actual);
     }
 
     [TestMethod]
@@ -192,6 +185,18 @@ namespace XmlSerializationSample.XmlSerialization.Tests
       Assert.AreEqual(document.ScreenSize, parsed.Root.Element("screen-size").Value);
       Assert.AreEqual(document.Processor, parsed.Root.Element("processor").Value);
       Assert.AreEqual(document.RamVolume, parsed.Root.Element("ram-volume").Value);
+    }
+
+    private static void Check(LaptopDocument expected, LaptopDocument actual)
+    {
+      Assert.IsNotNull(actual);
+
+      Assert.AreEqual(expected.Sku, actual.Sku);
+      Assert.AreEqual(expected.Title, actual.Title);
+      Assert.AreEqual(expected.Description, actual.Description);
+      Assert.AreEqual(expected.ScreenSize, actual.ScreenSize);
+      Assert.AreEqual(expected.Processor, actual.Processor);
+      Assert.AreEqual(expected.RamVolume, actual.RamVolume);
     }
   }
 }
