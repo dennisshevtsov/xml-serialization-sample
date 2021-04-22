@@ -7,8 +7,8 @@ namespace XmlSerializationSample.XmlSerialization
   using System;
   using System.Xml.Serialization;
 
-  public interface ISerializerConfig
+  public interface ISerializerConfiguration
   {
-    public ISerializerConfig Add(Type type, XmlAttributeOverrides overrides);
+    public ISerializerConfiguration Add(Type type, XmlAttributeOverrides overrides);
   }
 }

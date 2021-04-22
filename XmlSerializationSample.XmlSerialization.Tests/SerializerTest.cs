@@ -28,8 +28,7 @@ namespace XmlSerializationSample.XmlSerialization.Tests
       var services = new ServiceCollection();
 
       services.AddSerialization(
-        config => config.Add(new LaptopDocumentConfiguration())
-                        .Add(new OpticalMouseDocumentConfiguration()));
+        config => config.Add(new LaptopDocumentConfiguration()));
 
       var provider = services.BuildServiceProvider();
 
@@ -121,22 +120,18 @@ namespace XmlSerializationSample.XmlSerialization.Tests
     [TestMethod]
     public async Task TestDeserializeGenericStream()
     {
-      var xml = @"<?xml version=""1.0"" encoding=""utf-8""?>
-<product sku=""test"">
-  <title>Test Test</title>
-  <description>Test test test.</description>
-  <screen>test</screen>
-  <processor>test</processor>
-  <ram>test</ram>
-</product>";
+      var expected = SerializerTest.GenerateLaptop();
+      var xml = SerializerTest.GenerateXml(expected);
       using (var stream = new MemoryStream())
       using (var writer = new StreamWriter(stream))
       {
         await writer.WriteLineAsync(xml);
         await writer.FlushAsync();
 
-        var document = _serializer.DeserializeAsync<LaptopDocument>(
+        var actual = await _serializer.DeserializeAsync<LaptopDocument>(
           stream, CancellationToken.None);
+
+        SerializerTest.Check(expected, actual);
       }
     }
 

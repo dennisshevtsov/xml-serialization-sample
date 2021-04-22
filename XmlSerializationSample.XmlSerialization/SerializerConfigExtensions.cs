@@ -9,8 +9,8 @@ namespace XmlSerializationSample.XmlSerialization
 
   public static class SerializerConfigExtensions
   {
-    public static ISerializerConfig Add<TDocument>(
-      this ISerializerConfig config,
+    public static ISerializerConfiguration Add<TDocument>(
+      this ISerializerConfiguration config,
       IDocumentConfiguration<TDocument> configuration)
       where TDocument : class
     {

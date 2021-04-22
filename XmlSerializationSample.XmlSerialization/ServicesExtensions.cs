@@ -2,17 +2,18 @@
 // Licensed under the MIT License.
 // See LICENSE in the project root for license information.
 
-namespace XmlSerializationSample.XmlSerialization
+namespace Microsoft.Extensions.DependencyInjection
 {
   using System;
 
-  using Microsoft.Extensions.DependencyInjection;
   using Microsoft.IO;
+
+  using XmlSerializationSample.XmlSerialization;
 
   public static class ServicesExtensions
   {
     public static IServiceCollection AddSerialization(
-      this IServiceCollection services, Action<ISerializerConfig> configure)
+      this IServiceCollection services, Action<ISerializerConfiguration> configure)
     {
       if (services == null)
       {

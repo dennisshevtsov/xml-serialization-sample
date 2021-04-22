@@ -8,7 +8,7 @@ namespace XmlSerializationSample.XmlSerialization
   using System.Collections.Generic;
   using System.Xml.Serialization;
 
-  public sealed class SerializerProvider : ISerializerProvider, ISerializerConfig
+  public sealed class SerializerProvider : ISerializerProvider, ISerializerConfiguration
   {
     private readonly IDictionary<Type, XmlAttributeOverrides> _overridesDictionary;
 
@@ -17,7 +17,7 @@ namespace XmlSerializationSample.XmlSerialization
 
     public XmlSerializer Get(Type type) => new XmlSerializer(type, _overridesDictionary[type]);
 
-    public ISerializerConfig Add(Type type, XmlAttributeOverrides overrides)
+    public ISerializerConfiguration Add(Type type, XmlAttributeOverrides overrides)
     {
       _overridesDictionary.Add(type, overrides);
 
