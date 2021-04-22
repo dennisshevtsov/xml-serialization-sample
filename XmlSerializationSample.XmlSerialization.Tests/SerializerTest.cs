@@ -108,18 +108,14 @@ namespace XmlSerializationSample.XmlSerialization.Tests
     }
 
     [TestMethod]
-    public void TestDeserializeGeneric()
+    public async Task TestDeserializeGeneric()
     {
-      var xml = @"<?xml version=""1.0"" encoding=""utf-8""?>
-<product sku=""test"">
-  <title>Test Test</title>
-  <description>Test test test.</description>
-  <screen>test</screen>
-  <processor>test</processor>
-  <ram>test</ram>
-</product>";
-      var document = _serializer.DeserializeAsync<LaptopDocument>(
+      var expected = SerializerTest.GenerateLaptop();
+      var xml = SerializerTest.GenerateXml(expected);
+      var actual = await _serializer.DeserializeAsync<LaptopDocument>(
         xml, CancellationToken.None);
+
+      SerializerTest.Check(expected, actual);
     }
 
     [TestMethod]
