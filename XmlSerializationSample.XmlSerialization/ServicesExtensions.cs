@@ -10,8 +10,13 @@ namespace Microsoft.Extensions.DependencyInjection
 
   using XmlSerializationSample.XmlSerialization;
 
+  /// <summary>Provides methods to extend an API of the <see cref="Microsoft.Extensions.DependencyInjection.IServiceCollection"/> class.</summary>
   public static class ServicesExtensions
   {
+    /// <summary>Registers serialization services.</summary>
+    /// <param name="services">An object that specifies the contract for a collection of service descriptors.</param>
+    /// <param name="configure">An object that provides a simple API to register an XML configuration of a type.</param>
+    /// <returns>An object that specifies the contract for a collection of service descriptors.</returns>
     public static IServiceCollection AddSerialization(
       this IServiceCollection services, Action<ISerializerConfiguration> configure)
     {
