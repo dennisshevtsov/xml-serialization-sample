@@ -9,7 +9,6 @@ namespace XmlSerializationSample.XmlSerialization.Tests
   using System.Text;
   using System.Threading;
   using System.Threading.Tasks;
-  using System.Xml.Linq;
 
   using Microsoft.Extensions.DependencyInjection;
   using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -17,8 +16,6 @@ namespace XmlSerializationSample.XmlSerialization.Tests
   [TestClass]
   public class SerializerTest
   {
-    private const int RandomTokenSize = 5;
-
     private IDisposable _disposable;
     private ISerializer _serializer;
 
@@ -27,8 +24,7 @@ namespace XmlSerializationSample.XmlSerialization.Tests
     {
       var services = new ServiceCollection();
 
-      services.AddSerialization(
-        config => config.Add(new LaptopDocumentConfiguration()));
+      services.AddSerialization(config => config.Add(new LaptopDocumentConfiguration()));
 
       var provider = services.BuildServiceProvider();
 
@@ -42,10 +38,10 @@ namespace XmlSerializationSample.XmlSerialization.Tests
     [TestMethod]
     public async Task TestSerialize()
     {
-      var document = SerializerTest.GenerateLaptop();
+      var document = TestGenerator.GenerateLaptop();
       var xml = await _serializer.SerializeAsync(document, CancellationToken.None);
 
-      SerializerTest.Check(document, xml);
+      TestChecker.Check(document, xml);
     }
 
     [TestMethod]
@@ -53,7 +49,7 @@ namespace XmlSerializationSample.XmlSerialization.Tests
     {
       using (var stream = new MemoryStream())
       {
-        var document = SerializerTest.GenerateLaptop();
+        var document = TestGenerator.GenerateLaptop();
 
         await _serializer.SerializeAsync(document, stream, CancellationToken.None);
 
@@ -63,7 +59,7 @@ namespace XmlSerializationSample.XmlSerialization.Tests
 
           var xml = await reader.ReadToEndAsync();
 
-          SerializerTest.Check(document, xml);
+          TestChecker.Check(document, xml);
         }
       }
     }
@@ -71,8 +67,8 @@ namespace XmlSerializationSample.XmlSerialization.Tests
     [TestMethod]
     public async Task TestDeserialize()
     {
-      var expected = SerializerTest.GenerateLaptop();
-      var xml = SerializerTest.GenerateXml(expected);
+      var expected = TestGenerator.GenerateLaptop();
+      var xml = TestGenerator.GenerateXml(expected);
       var document = await _serializer.DeserializeAsync(
         xml, typeof(LaptopDocument), CancellationToken.None);
 
@@ -80,14 +76,14 @@ namespace XmlSerializationSample.XmlSerialization.Tests
 
       var actual = document as LaptopDocument;
 
-      SerializerTest.Check(expected, actual);
+      TestChecker.Check(expected, actual);
     }
 
     [TestMethod]
     public async Task TestDeserializeStream()
     {
-      var expected = SerializerTest.GenerateLaptop();
-      var xml = SerializerTest.GenerateXml(expected);
+      var expected = TestGenerator.GenerateLaptop();
+      var xml = TestGenerator.GenerateXml(expected);
 
       using (var stream = new MemoryStream())
       using (var writer = new StreamWriter(stream))
@@ -102,26 +98,27 @@ namespace XmlSerializationSample.XmlSerialization.Tests
 
         var actual = document as LaptopDocument;
 
-        SerializerTest.Check(expected, actual);
+        TestChecker.Check(expected, actual);
       }
     }
 
     [TestMethod]
     public async Task TestDeserializeGeneric()
     {
-      var expected = SerializerTest.GenerateLaptop();
-      var xml = SerializerTest.GenerateXml(expected);
+      var expected = TestGenerator.GenerateLaptop();
+      var xml = TestGenerator.GenerateXml(expected);
       var actual = await _serializer.DeserializeAsync<LaptopDocument>(
         xml, CancellationToken.None);
 
-      SerializerTest.Check(expected, actual);
+      TestChecker.Check(expected, actual);
     }
 
     [TestMethod]
     public async Task TestDeserializeGenericStream()
     {
-      var expected = SerializerTest.GenerateLaptop();
-      var xml = SerializerTest.GenerateXml(expected);
+      var expected = TestGenerator.GenerateLaptop();
+      var xml = TestGenerator.GenerateXml(expected);
+
       using (var stream = new MemoryStream())
       using (var writer = new StreamWriter(stream))
       {
@@ -131,63 +128,8 @@ namespace XmlSerializationSample.XmlSerialization.Tests
         var actual = await _serializer.DeserializeAsync<LaptopDocument>(
           stream, CancellationToken.None);
 
-        SerializerTest.Check(expected, actual);
+        TestChecker.Check(expected, actual);
       }
-    }
-
-    private static string GenerateToken(int length = SerializerTest.RandomTokenSize) =>
-      Guid.NewGuid()
-          .ToString()
-          .Replace("-", "")
-          .Substring(0, length)
-          .ToUpper();
-
-    private static LaptopDocument GenerateLaptop() =>
-      new LaptopDocument
-      {
-        Sku = SerializerTest.GenerateToken(),
-        Title = SerializerTest.GenerateToken(),
-        Description = SerializerTest.GenerateToken(),
-        ScreenSize = SerializerTest.GenerateToken(),
-        Processor = SerializerTest.GenerateToken(),
-        RamVolume = SerializerTest.GenerateToken(),
-      };
-
-    private static string GenerateXml(LaptopDocument document) =>
-@$"<?xml version=""1.0"" encoding=""utf-8""?>
-<product sku=""{document.Sku}"">
-  <title>{document.Title}</title>
-  <description>{document.Description}</description>
-  <screen-size>{document.ScreenSize}</screen-size>
-  <processor>{document.Processor}</processor>
-  <ram-volume>{document.RamVolume}</ram-volume>
-</product>";
-
-    private static void Check(LaptopDocument document, string xml)
-    {
-      Assert.IsNotNull(xml);
-
-      var parsed = XDocument.Parse(xml);
-
-      Assert.AreEqual("product", parsed.Root.Name.LocalName);
-      Assert.AreEqual(document.Sku, parsed.Root.Attribute("sku").Value);
-      Assert.AreEqual(document.Title, parsed.Root.Element("title").Value);
-      Assert.AreEqual(document.Description, parsed.Root.Element("description").Value);
-      Assert.AreEqual(document.ScreenSize, parsed.Root.Element("screen-size").Value);
-      Assert.AreEqual(document.Processor, parsed.Root.Element("processor").Value);
-      Assert.AreEqual(document.RamVolume, parsed.Root.Element("ram-volume").Value);
-    }
-
-    private static void Check(LaptopDocument expected, LaptopDocument actual)
-    {
-      Assert.IsNotNull(actual);
-
-      Assert.AreEqual(expected.Sku, actual.Sku);
-      Assert.AreEqual(expected.Title, actual.Title);
-      Assert.AreEqual(expected.Description, actual.Description);
-      Assert.AreEqual(expected.ScreenSize, actual.ScreenSize);
-      Assert.AreEqual(expected.Processor, actual.Processor);
-      Assert.AreEqual(expected.RamVolume, actual.RamVolume);
     }
   }
 }
