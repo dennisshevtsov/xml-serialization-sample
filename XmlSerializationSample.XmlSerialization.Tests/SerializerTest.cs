@@ -87,14 +87,8 @@ namespace XmlSerializationSample.XmlSerialization.Tests
     [TestMethod]
     public async Task TestDeserializeStream()
     {
-      var xml = @"<?xml version=""1.0"" encoding=""utf-8""?>
-<product sku=""test"">
-  <title>Test Test</title>
-  <description>Test test test.</description>
-  <screen>test</screen>
-  <processor>test</processor>
-  <ram>test</ram>
-</product>";
+      var expected = SerializerTest.GenerateLaptop();
+      var xml = SerializerTest.GenerateXml(expected);
 
       using (var stream = new MemoryStream())
       using (var writer = new StreamWriter(stream))
@@ -102,8 +96,14 @@ namespace XmlSerializationSample.XmlSerialization.Tests
         await writer.WriteLineAsync(xml);
         await writer.FlushAsync();
 
-        var document = _serializer.DeserializeAsync(
+        var document = await _serializer.DeserializeAsync(
           stream, typeof(LaptopDocument), CancellationToken.None);
+
+        Assert.IsNotNull(document);
+
+        var actual = document as LaptopDocument;
+
+        SerializerTest.Check(expected, actual);
       }
     }
 
