@@ -49,17 +49,15 @@ namespace XmlSerializationSample.XmlSerialization
       xmlSerializer.Serialize(writer, document, namespaces);
     }
 
-    public Task SerializeAsync(object document, Stream output, CancellationToken cancellationToken)
+    public async Task SerializeAsync(object document, Stream output, CancellationToken cancellationToken)
     {
       using (var stream = _streamManager.GetStream())
       using (var writer = new StreamWriter(stream, Encoding.UTF8))
       {
         Serialize(document, writer);
+
         stream.Seek(0, SeekOrigin.Begin);
-
-        stream.CopyTo(output);
-
-        return Task.CompletedTask;
+        await stream.CopyToAsync(output, cancellationToken);
       }
     }
 
@@ -75,13 +73,9 @@ namespace XmlSerializationSample.XmlSerialization
         stream.Seek(0, SeekOrigin.Begin);
 
         var serializer = _serializerProvider.Get(type);
+        var output = serializer.Deserialize(reader);
 
-        var namespaces = new XmlSerializerNamespaces();
-        namespaces.Add("", "");
-
-        var a = serializer.Deserialize(reader);
-
-        return a;
+        return output;
       }
     }
 
@@ -92,11 +86,9 @@ namespace XmlSerializationSample.XmlSerialization
         stream.Seek(0, SeekOrigin.Begin);
 
         var serializer = _serializerProvider.Get(type);
+        var output = serializer.Deserialize(reader);
 
-        var namespaces = new XmlSerializerNamespaces();
-        namespaces.Add("", "");
-
-        return Task.FromResult(serializer.Deserialize(reader));
+        return Task.FromResult(output);
       }
     }
 
@@ -113,11 +105,9 @@ namespace XmlSerializationSample.XmlSerialization
         stream.Seek(0, SeekOrigin.Begin);
 
         var serializer = _serializerProvider.Get(typeof(TDocument));
+        var output = serializer.Deserialize(reader) as TDocument;
 
-        var namespaces = new XmlSerializerNamespaces();
-        namespaces.Add("", "");
-
-        return serializer.Deserialize(reader) as TDocument;
+        return output;
       }
     }
 
@@ -129,11 +119,9 @@ namespace XmlSerializationSample.XmlSerialization
         stream.Seek(0, SeekOrigin.Begin);
 
         var serializer = _serializerProvider.Get(typeof(TDocument));
+        var output = serializer.Deserialize(reader) as TDocument;
 
-        var namespaces = new XmlSerializerNamespaces();
-        namespaces.Add("", "");
-
-        return Task.FromResult(serializer.Deserialize(reader) as TDocument);
+        return Task.FromResult(output);
       }
     }
   }
