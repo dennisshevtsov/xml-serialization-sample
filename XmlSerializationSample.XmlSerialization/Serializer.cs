@@ -19,6 +19,9 @@ namespace XmlSerializationSample.XmlSerialization
     private readonly RecyclableMemoryStreamManager _streamManager;
     private readonly ISerializerProvider _serializerProvider;
 
+    /// <summary>Initializes a new instance of the <see cref="XmlSerializationSample.XmlSerialization.Serializer"/> class.</summary>
+    /// <param name="streamManager">An object that manages pools of Microsoft.IO.RecyclableMemoryStream objects.</param>
+    /// <param name="serializerProvider">An object that provides a simple API to get an instance of the <see cref="System.Xml.Serialization.XmlSerializer"/> class for a type of a serializing object.</param>
     public Serializer(
       RecyclableMemoryStreamManager streamManager,
       ISerializerProvider serializerProvider)
