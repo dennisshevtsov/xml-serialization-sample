@@ -13,6 +13,7 @@ namespace XmlSerializationSample.XmlSerialization
 
   using Microsoft.IO;
 
+  /// <summary>Provides a simple API to serialize/deserialize an object.</summary>
   public sealed class Serializer : ISerializer
   {
     private readonly RecyclableMemoryStreamManager _streamManager;
@@ -26,6 +27,10 @@ namespace XmlSerializationSample.XmlSerialization
       _serializerProvider = serializerProvider ?? throw new ArgumentNullException(nameof(serializerProvider));
     }
 
+    /// <summary>Serializes an object.</summary>
+    /// <param name="document">An object that reprennts a document that is required to serialize.</param>
+    /// <param name="cancellationToken">An object that propagates notification that operations should be canceled.</param>
+    /// <returns>An object that represents an asynchronous operation that can return a value.</returns>
     public async Task<string> SerializeAsync(object document, CancellationToken cancellationToken)
     {
       using (var stream = _streamManager.GetStream())
@@ -39,16 +44,11 @@ namespace XmlSerializationSample.XmlSerialization
       }
     }
 
-    private void Serialize(object document, StreamWriter writer)
-    {
-      var xmlSerializer = _serializerProvider.Get(document.GetType());
-
-      var namespaces = new XmlSerializerNamespaces();
-      namespaces.Add("", "");
-
-      xmlSerializer.Serialize(writer, document, namespaces);
-    }
-
+    /// <summary>Serializes an object.</summary>
+    /// <param name="document">An object that reprennts a document that is required to serialize.</param>
+    /// <param name="stream"></param>
+    /// <param name="cancellationToken">An object that propagates notification that operations should be canceled.</param>
+    /// <returns>An object that represents an asynchronous operation.</returns>
     public async Task SerializeAsync(object document, Stream output, CancellationToken cancellationToken)
     {
       using (var stream = _streamManager.GetStream())
@@ -61,6 +61,11 @@ namespace XmlSerializationSample.XmlSerialization
       }
     }
 
+    /// <summary>Deserializes an object.</summary>
+    /// <param name="input">An object that represents a serialized object.</param>
+    /// <param name="type">An object that represents a type of a serialized object.</param>
+    /// <param name="cancellationToken">An object that propagates notification that operations should be canceled.</param>
+    /// <returns>An object that represents an asynchronous operation that can return a value.</returns>
     public async Task<object> DeserializeAsync(string input, Type type, CancellationToken cancellationToken)
     {
       using (var stream = _streamManager.GetStream())
@@ -79,11 +84,16 @@ namespace XmlSerializationSample.XmlSerialization
       }
     }
 
-    public Task<object> DeserializeAsync(Stream stream, Type type, CancellationToken cancellationToken)
+    /// <summary>Deserializes an object.</summary>
+    /// <param name="input">An object that represents a serialized object.</param>
+    /// <param name="type">An object that represents a type of a serialized object.</param>
+    /// <param name="cancellationToken">An object that propagates notification that operations should be canceled.</param>
+    /// <returns>An object that represents an asynchronous operation that can return a value.</returns>
+    public Task<object> DeserializeAsync(Stream input, Type type, CancellationToken cancellationToken)
     {
-      using (var reader = new StreamReader(stream, Encoding.UTF8))
+      using (var reader = new StreamReader(input, Encoding.UTF8))
       {
-        stream.Seek(0, SeekOrigin.Begin);
+        input.Seek(0, SeekOrigin.Begin);
 
         var serializer = _serializerProvider.Get(type);
         var output = serializer.Deserialize(reader);
@@ -92,6 +102,11 @@ namespace XmlSerializationSample.XmlSerialization
       }
     }
 
+    /// <summary>Deserializes an object.</summary>
+    /// <typeparam name="TDocument">A type of a serialized object.</typeparam>
+    /// <param name="input">An object that represents a serialized object.</param>
+    /// <param name="cancellationToken">An object that propagates notification that operations should be canceled.</param>
+    /// <returns>An object that represents an asynchronous operation that can return a value.</returns>
     public async Task<TDocument> DeserializeAsync<TDocument>(string input, CancellationToken cancellationToken)
       where TDocument : class
     {
@@ -111,6 +126,11 @@ namespace XmlSerializationSample.XmlSerialization
       }
     }
 
+    /// <summary>Deserializes an object.</summary>
+    /// <typeparam name="TDocument">A type of a serialized object.</typeparam>
+    /// <param name="input">An object that represents a serialized object.</param>
+    /// <param name="cancellationToken">An object that propagates notification that operations should be canceled.</param>
+    /// <returns>An object that represents an asynchronous operation that can return a value.</returns>
     public Task<TDocument> DeserializeAsync<TDocument>(Stream stream, CancellationToken cancellationToken)
       where TDocument : class
     {
@@ -123,6 +143,16 @@ namespace XmlSerializationSample.XmlSerialization
 
         return Task.FromResult(output);
       }
+    }
+
+    private void Serialize(object document, StreamWriter writer)
+    {
+      var xmlSerializer = _serializerProvider.Get(document.GetType());
+
+      var namespaces = new XmlSerializerNamespaces();
+      namespaces.Add("", "");
+
+      xmlSerializer.Serialize(writer, document, namespaces);
     }
   }
 }
